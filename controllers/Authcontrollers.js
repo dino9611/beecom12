@@ -43,7 +43,71 @@ module.exports={
             })
         })
     },
+    verifieduser:(req,res)=>{
+        const {id}=req.user
+        var obj={
+            isverified:1
+        }
+        var sql=`update users set ? where id=${id}`
+        db.query(sql,obj,(err,result)=>{
+            if(err) return res.status(500).send(err)
+            sql=`select * from users where id=${id}`
+            db.query(sql,(err,result1)=>{
+                if (err) return res.status(500).send(err)
+                return res.status(200).send(result1[0])
+            })
+        })
+    },
+    sendemailverified:(req,res)=>{
+        const {userid,username,email}=req.body
+        const token=createJWTToken({id:userid,username:username})
+        var LinkVerifikasi=`http://localhost:3000/verified?token=${token}`
+        var mailoptions={
+            from:'Hokage <aldinorahman36@gmail.com>',
+            to:email,
+            subject:'Misi Level A verified ulang',
+            html:`tolong klik link ini untuk verifikasi :
+            <a href=${LinkVerifikasi}>Minimales verified</a>`
+        }
+        transporter.sendMail(mailoptions,(err,result2)=>{
+            if (err) return res.status(500).send(err)
+            return res.status(200).send({pesan:true})
+        })
+    },
     login:(req,res)=>{
-
+        const {username,password}=req.query
+        var sql=`select * from users where username='${username}' and password='${encrypt(password)}'`
+        db.query(sql,(err,result)=>{
+            if(err) return res.status(500).send(err)
+            if(result.length){
+                sql=`select count(*) as jumlahcart from transactions t 
+                join transactiondetails td on t.id=td.transactionid 
+                where t.userid=${result[0].id} and t.status='oncart'`
+                db.query(sql,(err,result1)=>{
+                    if(err) return res.status(500).send(err)
+                    const token=createJWTToken({id:result[0].id,username:result[0].username})
+                    res.status(200).send({...result[0],jumlahcart:result1[0].jumlahcart,status:true,token:token})
+                })
+            }else{
+                return res.status(200).send({status:false})
+            }
+        })
+    },
+    keeplogin:(req,res)=>{
+        // console.log(req.user)
+        var sql=`select * from users where id=${req.user.id}`
+        db.query(sql,(err,result)=>{
+            if(err){
+                return res.status(500).send(err)
+            }
+            sql=`select count(*) as jumlahcart from transactions t 
+            join transactiondetails td on t.id=td.transactionid 
+            where t.userid=${result[0].id} and t.status='oncart'`
+            db.query(sql,(err,result1)=>{
+                if(err) return res.status(500).send(err)
+                const token=createJWTToken({id:result[0].id,username:result[0].username})
+                res.status(200).send({...result[0],jumlahcart:result1[0].jumlahcart,token:token})
+            })
+        })
     }
 }
