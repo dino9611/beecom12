@@ -109,5 +109,44 @@ module.exports={
                 res.status(200).send({...result[0],jumlahcart:result1[0].jumlahcart,token:token})
             })
         })
+    },
+    loginfacebook:(req,res)=>{
+        const {username,email}=req.body
+        var sql=`select * from users where username='${username}' and email='${email}'`
+        db.query(sql,(err,result)=>{
+            if(err){
+                return res.status(500).send(err)
+            }
+            if(result.length){
+                sql=`select count(*) as jumlahcart from transactions t 
+                join transactiondetails td on t.id=td.transactionid 
+                where t.userid=${result[0].id} and t.status='oncart'`
+                db.query(sql,(err,result1)=>{
+                    if(err) return res.status(500).send(err)
+                    const token=createJWTToken({id:result[0].id,username:result[0].username})
+                    return res.status(200).send({...result[0],jumlahcart:result1[0].jumlahcart,token:token})
+                })
+            }else{
+                var data={
+                    username,
+                    email,
+                    lastlogin: new Date(),
+                    isfacebook:1,
+                    isverified:1
+                }
+                sql=`insert into users set ?`
+                db.query(sql,data,(err,result1)=>{
+                    if(err){
+                        return res.status(500).send(err)
+                    }
+                    const token=createJWTToken({id:result1.insertId,username:username})
+                    sql=`select * from users where id=${result1.insertId}`
+                    db.query(sql,(err,result3)=>{
+                        if (err) return res.status(500).send(err)
+                        return res.status(200).send({...result3[0],token,jumlahcart:0})
+                    })
+                })
+            }
+        })
     }
 }

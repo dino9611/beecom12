@@ -10,6 +10,7 @@ router.get('/verified',auth,AuthControllers.verifieduser)
 router.post('/sendemailverified',AuthControllers.sendemailverified)
 router.get('/login',AuthControllers.login)
 router.get('/keeplogin',auth,AuthControllers.keeplogin)
+router.post('/fblog',AuthControllers.loginfacebook)
 
 
 
