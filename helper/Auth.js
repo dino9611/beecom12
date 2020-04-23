@@ -5,13 +5,13 @@ module.exports = {
         // console.log(req.method)
         if (req.method !== "OPTIONS") {
             // let success = true;
-            console.log(req.token)
+            // console.log(req.token)
             jwt.verify(req.token, "puripuriprisoner", (error, decoded) => {
                 if (error) {
                     // success = false;
                     return res.status(401).json({ message: "User not authorized.", error: "User not authorized." });
                 }
-                console.log(decoded,'inidecode')
+                // console.log(decoded,'inidecode')
                 req.user = decoded;
                 next();
             });

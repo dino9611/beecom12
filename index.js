@@ -17,8 +17,9 @@ app.get('/',(req,res)=>{
     res.send('<h1>selemat datang di Api Ecoomerce jc12 1.0</h1>')
 })
 
-const {AuthRouters} = require('./routers')
+const {AuthRouters,ProductRouters} = require('./routers')
 
 app.use('/users',AuthRouters)
+app.use('/product',ProductRouters)
 
 app.listen(PORT,()=>console.log(`Api jalan di PORT ${PORT}`))

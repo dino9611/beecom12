@@ -148,5 +148,10 @@ module.exports={
                 })
             }
         })
+    },
+    encryptpass(req,res){
+        const {pass}=req.query
+        const encryptpass=encrypt(pass)
+        res.send(encryptpass)
     }
 }
